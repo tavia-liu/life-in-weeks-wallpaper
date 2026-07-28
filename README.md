@@ -4,15 +4,8 @@ A lightweight static wallpaper generator. It uses one HTML file with inline CSS 
 
 ## Run locally
 
-```sh
-npm install
-npm run dev
-```
+Open `index.html` in a browser.
 
-## Build
+## Publish with GitHub Pages
 
-```sh
-npm run build
-```
-
-The built site is emitted to `dist/`.
+Serve the repository from the `main` branch and `/` root.

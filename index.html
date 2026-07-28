@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Life in Weeks Wallpaper</title>
+  <meta name="description" content="A lightweight life-in-weeks wallpaper generator with laptop presets, custom sizes, and PNG export." />
+  <style>
+    :root {
+      --page: #f4f1eb;
+      --panel: rgba(255,255,255,.58);
+      --text: #171717;
+      --muted-ui: #726c64;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--page);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1260px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(23,23,23,.12);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      font-weight: 400;
+    }
+
+    .intro {
+      margin: 0 0 18px;
+      color: var(--muted-ui);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-size: 13px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    input, select, button {
+      width: 100%;
+      font: inherit;
+    }
+
+    input, select {
+      border: 1px solid rgba(23,23,23,.18);
+      border-radius: 8px;
+      padding: 10px 11px;
+      background: rgba(255,255,255,.75);
+      color: var(--text);
+    }
+
+    input[type="range"] {
+      padding: 0;
+    }
+
+    .custom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      border-top: 1px solid rgba(23,23,23,.16);
+      padding-top: 10px;
+    }
+
+    .stat small {
+      display: block;
+      color: var(--muted-ui);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 3px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 24px;
+      font-weight: 400;
+    }
+
+    button {
+      margin-top: 16px;
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: #171717;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover { opacity: .9; }
+
+    .preview-wrap {
+      min-width: 0;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid rgba(23,23,23,.12);
+      background: #e9e3d8;
+    }
+
+    .note {
+      margin-top: 10px;
+      color: var(--muted-ui);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      body { padding: 14px; }
+      .app { grid-template-columns: 1fr; }
+      .panel { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="panel">
+      <h1>Life in Weeks</h1>
+      <p class="intro">
+        Make a personal wallpaper from a birthday, lifespan, screen size, and visual style. Everything runs locally in your browser.
+      </p>
+
+      <label for="birthday">Birthday</label>
+      <input id="birthday" type="date" value="2005-03-18" />
+
+      <label for="years">Years shown</label>
+      <input id="years" type="number" min="40" max="120" value="90" />
+
+      <label for="sizePreset">Wallpaper size</label>
+      <select id="sizePreset">
+        <option value="2560x1600" selected>MacBook Air 2020 — 2560 × 1600</option>
+        <option value="2560x1664">MacBook Air 13.6 — 2560 × 1664</option>
+        <option value="2880x1864">MacBook Air 15.3 — 2880 × 1864</option>
+        <option value="3024x1964">MacBook Pro 14 — 3024 × 1964</option>
+        <option value="3456x2234">MacBook Pro 16 — 3456 × 2234</option>
+        <option value="1920x1080">Windows laptop Full HD — 1920 × 1080</option>
+        <option value="2560x1440">Windows laptop QHD — 2560 × 1440</option>
+        <option value="3000x2000">Surface Laptop 13.5 — 3000 × 2000</option>
+        <option value="2496x1664">Surface Laptop Go / Studio style — 2496 × 1664</option>
+        <option value="3840x2160">4K UHD — 3840 × 2160</option>
+        <option value="custom">Custom size</option>
+      </select>
+
+      <div id="customSizeBox" class="custom-grid hidden">
+        <div>
+          <label for="customWidth">Custom width</label>
+          <input id="customWidth" type="number" min="800" step="1" value="2560" />
+        </div>
+        <div>
+          <label for="customHeight">Custom height</label>
+          <input id="customHeight" type="number" min="600" step="1" value="1600" />
+        </div>
+      </div>
+
+      <label for="style">Style</label>
+      <select id="style">
+        <option value="noir-film" selected>Noir Film</option>
+        <option value="silver-screen">Silver Screen</option>
+        <option value="linen-editorial">Linen Editorial</option>
+        <option value="velvet-plum">Velvet Plum</option>
+        <option value="blueprint-paper">Blueprint Paper</option>
+      </select>
+
+      <label for="textureStrength">Texture strength</label>
+      <input id="textureStrength" type="range" min="0" max="100" value="48" />
+
+      <div class="stats">
+        <div class="stat">
+          <small>Weeks lived</small>
+          <strong id="weeksLived">—</strong>
+        </div>
+        <div class="stat">
+          <small>Complete</small>
+          <strong id="percentLived">—</strong>
+        </div>
+      </div>
+
+      <button id="download" type="button">Download wallpaper</button>
+      <p class="note">
+        Tip. If you use custom size, enter the exact wallpaper resolution you want, then download the PNG.
+      </p>
+    </section>
+
+    <section class="preview-wrap">
+      <canvas id="canvas" width="2560" height="1600" aria-label="Life in weeks wallpaper preview"></canvas>
+    </section>
+  </main>
+
+  <script>
+    const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const birthdayInput = document.getElementById('birthday');
+    const yearsInput = document.getElementById('years');
+    const sizePresetInput = document.getElementById('sizePreset');
+    const customSizeBox = document.getElementById('customSizeBox');
+    const customWidthInput = document.getElementById('customWidth');
+    const customHeightInput = document.getElementById('customHeight');
+    const styleInput = document.getElementById('style');
+    const textureStrengthInput = document.getElementById('textureStrength');
+    const weeksLivedEl = document.getElementById('weeksLived');
+    const percentLivedEl = document.getElementById('percentLived');
+    const downloadButton = document.getElementById('download');
+
+    const styles = {
+      'noir-film': {
+        bg: '#ece6dc',
+        ink: '#161616',
+        muted: '#6f685f',
+        empty: '#c9c0b2',
+        accent: '#8d2332'
+      },
+      'silver-screen': {
+        bg: '#ededed',
+        ink: '#111111',
+        muted: '#747474',
+        empty: '#cacaca',
+        accent: '#8d8d8d'
+      },
+      'linen-editorial': {
+        bg: '#f0eadf',
+        ink: '#1b1815',
+        muted: '#7b736a',
+        empty: '#d3c9ba',
+        accent: '#a16d3a'
+      },
+      'velvet-plum': {
+        bg: '#ebe2ea',
+        ink: '#201721',
+        muted: '#7c6d7f',
+        empty: '#d2c2d3',
+        accent: '#7a466f'
+      },
+      'blueprint-paper': {
+        bg: '#e9eff5',
+        ink: '#172131',
+        muted: '#69788b',
+        empty: '#c7d2de',
+        accent: '#2d5ca6'
+      }
+    };
+
+    function getDimensions() {
+      if (sizePresetInput.value === 'custom') {
+        const width = Math.max(800, Number(customWidthInput.value) || 2560);
+        const height = Math.max(600, Number(customHeightInput.value) || 1600);
+        return { width, height, label: `${width}x${height}` };
+      }
+      const [width, height] = sizePresetInput.value.split('x').map(Number);
+      return { width, height, label: sizePresetInput.value };
+    }
+
+    function parseDate(value) {
+      if (!value) return null;
+      const [y, m, d] = value.split('-').map(Number);
+      return new Date(y, m - 1, d, 12);
+    }
+
+    function getLifeData() {
+      const birthday = parseDate(birthdayInput.value);
+      const now = new Date();
+      const years = Math.max(40, Math.min(120, Number(yearsInput.value) || 90));
+      const totalWeeks = years * 52;
+
+      if (!birthday || birthday > now) {
+        return { valid: false, years, totalWeeks, completed: 0, percent: 0 };
+      }
+
+      const completed = Math.max(0, Math.min(totalWeeks, Math.floor((now - birthday) / WEEK_MS)));
+
+      return {
+        valid: true,
+        years,
+        totalWeeks,
+        completed,
+        percent: completed / totalWeeks * 100
+      };
+    }
+
+    function trackedText(text, x, y, spacing, align = 'left') {
+      const chars = [...text];
+      const widths = chars.map(char => ctx.measureText(char).width);
+      const total = widths.reduce((a, b) => a + b, 0) + spacing * Math.max(0, chars.length - 1);
+      let cursor = x;
+      if (align === 'center') cursor -= total / 2;
+      if (align === 'right') cursor -= total;
+
+      chars.forEach((char, i) => {
+        ctx.fillText(char, cursor, y);
+        cursor += widths[i] + spacing;
+      });
+    }
+
+    function seededRandomFactory(seed) {
+      let state = seed || 1234567;
+      return function() {
+        state ^= state << 13;
+        state ^= state >>> 17;
+        state ^= state << 5;
+        return ((state >>> 0) % 10000) / 10000;
+      };
+    }
+
+    function drawGrain(width, height, strength, seed, darkBias = 0.5) {
+      if (strength <= 0) return;
+      const random = seededRandomFactory(seed);
+      const dots = Math.floor((width * height / 240) * (strength / 100));
+      ctx.save();
+      for (let i = 0; i < dots; i++) {
+        const x = random() * width;
+        const y = random() * height;
+        const s = 0.35 + random() * 1.2;
+        const a = 0.012 + random() * 0.04;
+        const dark = random() < darkBias;
+        ctx.fillStyle = dark ? `rgba(0,0,0,${a})` : `rgba(255,255,255,${a})`;
+        ctx.fillRect(x, y, s, s);
+      }
+      ctx.restore();
+    }
+
+    function drawDustAndScratches(width, height, strength, seed) {
+      const random = seededRandomFactory(seed + 17);
+      ctx.save();
+      const scratchCount = Math.floor(8 + strength / 6);
+      ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < scratchCount; i++) {
+        const x = random() * width;
+        const y = random() * height;
+        const len = height * (0.08 + random() * 0.18);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + random() * 8 - 4, y + len);
+        ctx.stroke();
+      }
+      const dustCount = Math.floor(90 + strength * 2.4);
+      for (let i = 0; i < dustCount; i++) {
+        const x = random() * width;
+        const y = random() * height;
+        const r = 0.3 + random() * 1.8;
+        ctx.fillStyle = random() > 0.5 ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)';
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawLinen(width, height, strength, seed) {
+      const random = seededRandomFactory(seed + 31);
+      const spacing = Math.max(8, Math.round(24 - strength / 8));
+      ctx.save();
+      ctx.lineWidth = 1;
+      for (let x = 0; x < width; x += spacing) {
+        ctx.strokeStyle = `rgba(255,255,255,${0.03 + strength / 5000})`;
+        ctx.beginPath();
+        ctx.moveTo(x + random() * 2, 0);
+        ctx.lineTo(x + random() * 2, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < height; y += spacing) {
+        ctx.strokeStyle = `rgba(0,0,0,${0.025 + strength / 6000})`;
+        ctx.beginPath();
+        ctx.moveTo(0, y + random() * 2);
+        ctx.lineTo(width, y + random() * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawVelvet(width, height, strength, seed) {
+      const random = seededRandomFactory(seed + 53);
+      ctx.save();
+      for (let i = 0; i < 140; i++) {
+        const x = random() * width;
+        const y = random() * height;
+        const r = 20 + random() * (40 + strength);
+        const alpha = 0.008 + random() * 0.018;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, `rgba(255,255,255,${alpha})`);
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+      drawGrain(width, height, strength * 0.7, seed + 7, 0.45);
+    }
+
+    function drawPaperFibers(width, height, strength, seed) {
+      const random = seededRandomFactory(seed + 71);
+      ctx.save();
+      const count = Math.floor(160 + strength * 4);
+      for (let i = 0; i < count; i++) {
+        const x = random() * width;
+        const y = random() * height;
+        const len = 3 + random() * 10;
+        const angle = random() * Math.PI * 2;
+        ctx.strokeStyle = random() > 0.5 ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 0.7;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
+        ctx.stroke();
+      }
+      drawGrain(width, height, strength * 0.75, seed + 13, 0.52);
+      ctx.restore();
+    }
+
+    function drawSilverDots(width, height, strength, seed) {
+      const random = seededRandomFactory(seed + 91);
+      const step = Math.max(8, 20 - Math.floor(strength / 8));
+      ctx.save();
+      for (let y = 0; y < height; y += step) {
+        for (let x = 0; x < width; x += step) {
+          const a = 0.018 + random() * 0.018;
+          const r = 0.5 + random() * 1.1;
+          ctx.fillStyle = `rgba(0,0,0,${a})`;
+          ctx.beginPath();
+          ctx.arc(x + random() * 2, y + random() * 2, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      drawGrain(width, height, strength * 0.85, seed + 5, 0.6);
+      ctx.restore();
+    }
+
+    function drawVignette(width, height, alpha) {
+      ctx.save();
+      const g = ctx.createRadialGradient(width / 2, height / 2, Math.min(width, height) * 0.25, width / 2, height / 2, Math.max(width, height) * 0.75);
+      g.addColorStop(0, 'rgba(0,0,0,0)');
+      g.addColorStop(1, `rgba(0,0,0,${alpha})`);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, width, height);
+      ctx.restore();
+    }
+
+    function applyTexture(styleName, width, height, strength, seed) {
+      if (strength <= 0) return;
+      if (styleName === 'noir-film') {
+        drawGrain(width, height, strength, seed, 0.58);
+        drawDustAndScratches(width, height, strength, seed);
+        drawVignette(width, height, 0.09);
+      } else if (styleName === 'silver-screen') {
+        drawSilverDots(width, height, strength, seed);
+        drawVignette(width, height, 0.05);
+      } else if (styleName === 'linen-editorial') {
+        drawLinen(width, height, strength, seed);
+        drawGrain(width, height, strength * 0.45, seed + 9, 0.42);
+      } else if (styleName === 'velvet-plum') {
+        drawVelvet(width, height, strength, seed);
+        drawVignette(width, height, 0.07);
+      } else if (styleName === 'blueprint-paper') {
+        drawPaperFibers(width, height, strength, seed);
+      }
+    }
+
+    function draw() {
+      const { width, height } = getDimensions();
+      const data = getLifeData();
+      const styleName = styleInput.value;
+      const style = styles[styleName];
+      const textureStrength = Number(textureStrengthInput.value);
+
+      canvas.width = width;
+      canvas.height = height;
+
+      ctx.fillStyle = style.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      const leftX = width * 0.095;
+      const titleBlockW = width * 0.145;
+      const gridLeft = width * 0.305;
+      const gridRight = width * 0.975;
+      const gridTop = height * 0.085;
+      const gridBottom = height * 0.93;
+
+      ctx.fillStyle = style.ink;
+      ctx.font = `italic ${Math.round(height * 0.085)}px Georgia`;
+      ctx.fillText('Life', leftX, height * 0.235);
+
+      ctx.font = `${Math.round(height * 0.07)}px Arial`;
+      ctx.fillText('in weeks', leftX, height * 0.31);
+
+      ctx.fillStyle = style.muted;
+      ctx.font = `${Math.round(height * 0.015)}px Arial`;
+      trackedText('EDITORIAL WALLPAPER', leftX, height * 0.355, width * 0.0012);
+
+      ctx.strokeStyle = 'rgba(23,23,23,.24)';
+      ctx.lineWidth = Math.max(1, width / 2600);
+      ctx.beginPath();
+      ctx.moveTo(leftX, height * 0.40);
+      ctx.lineTo(leftX + titleBlockW, height * 0.40);
+      ctx.stroke();
+
+      ctx.fillStyle = style.ink;
+      ctx.font = `${Math.round(height * 0.064)}px Georgia`;
+      ctx.fillText(data.valid ? data.completed.toLocaleString() : '—', leftX, height * 0.515);
+
+      ctx.fillStyle = style.muted;
+      ctx.font = `${Math.round(height * 0.014)}px Arial`;
+      trackedText('WEEKS LIVED', leftX, height * 0.547, width * 0.0013);
+
+      ctx.fillStyle = style.accent;
+      ctx.font = `${Math.round(height * 0.043)}px Georgia`;
+      ctx.fillText(data.valid ? `${data.percent.toFixed(1)}%` : '—', leftX, height * 0.645);
+
+      ctx.fillStyle = style.muted;
+      ctx.font = `${Math.round(height * 0.013)}px Arial`;
+      trackedText('COMPLETE', leftX, height * 0.676, width * 0.0013);
+
+      const rows = data.years;
+      const cols = 52;
+      const gridWidth = gridRight - gridLeft;
+      const gridHeight = gridBottom - gridTop;
+      const gap = Math.max(1.05, Math.min(width, height) * 0.00155);
+
+      const cell = Math.min(
+        (gridWidth - gap * (cols - 1)) / cols,
+        (gridHeight - gap * (rows - 1)) / rows
+      );
+
+      const usedW = cell * cols + gap * (cols - 1);
+      const usedH = cell * rows + gap * (rows - 1);
+      const startX = gridLeft + (gridWidth - usedW) / 2;
+      const startY = gridTop + (gridHeight - usedH) / 2;
+
+      ctx.fillStyle = style.muted;
+      ctx.font = `${Math.max(10, Math.round(height * 0.0105))}px Arial`;
+      ctx.textAlign = 'right';
+      for (let y = 0; y < rows; y += 10) {
+        const labelY = startY + y * (cell + gap) + cell * 0.78;
+        ctx.fillText(String(y), startX - width * 0.0075, labelY);
+      }
+      ctx.fillText(String(rows - 1), startX - width * 0.0075, startY + (rows - 1) * (cell + gap) + cell * 0.78);
+      ctx.textAlign = 'left';
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const index = r * cols + c;
+          const x = startX + c * (cell + gap);
+          const y = startY + r * (cell + gap);
+
+          if (data.valid && index < data.completed) {
+            ctx.fillStyle = style.ink;
+            ctx.fillRect(x, y, cell, cell);
+          } else if (data.valid && index === data.completed && data.completed < data.totalWeeks) {
+            ctx.fillStyle = style.accent;
+            ctx.fillRect(x, y, cell, cell);
+          } else {
+            ctx.strokeStyle = style.empty;
+            ctx.lineWidth = Math.max(.7, cell * .085);
+            ctx.strokeRect(x, y, cell, cell);
+          }
+        }
+      }
+
+      ctx.save();
+      ctx.translate(width * 0.984, height * 0.53);
+      ctx.rotate(Math.PI / 2);
+      ctx.fillStyle = style.muted;
+      ctx.font = `${Math.round(height * 0.0125)}px Arial`;
+      trackedText('ONE SQUARE · ONE WEEK', 0, 0, width * 0.0011, 'center');
+      ctx.restore();
+
+      applyTexture(styleName, width, height, textureStrength, data.completed + data.years * 101);
+
+      weeksLivedEl.textContent = data.valid ? data.completed.toLocaleString() : '—';
+      percentLivedEl.textContent = data.valid ? `${data.percent.toFixed(1)}%` : '—';
+    }
+
+    function updateCustomVisibility() {
+      customSizeBox.classList.toggle('hidden', sizePresetInput.value !== 'custom');
+      draw();
+    }
+
+    function download() {
+      draw();
+      canvas.toBlob(blob => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'life-in-weeks-wallpaper.png';
+        a.click();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    }
+
+    [birthdayInput, yearsInput, sizePresetInput, customWidthInput, customHeightInput, styleInput, textureStrengthInput].forEach(el => {
+      el.addEventListener('input', draw);
+      el.addEventListener('change', draw);
+    });
+
+    sizePresetInput.addEventListener('change', updateCustomVisibility);
+    downloadButton.addEventListener('click', download);
+
+    updateCustomVisibility();
+  </script>
+</body>
+</html>
